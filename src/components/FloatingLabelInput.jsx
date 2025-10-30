@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import './FloatingLabelInput.css';
 
+// Custom input component with floating label animation
 function FloatingLabelInput({ label, placeholder, value, onChange, onKeyDown }) {
+  // Track focus state for styling
   const [isFocused, setIsFocused] = useState(false);
 
   const handleFocus = () => setIsFocused(true);
   const handleBlur = () => setIsFocused(false);
 
-  // Label nổi lên khi: focused hoặc có giá trị
+  // Label floats up when input is focused or has value
   const isFloating = isFocused || value;
 
   return (

@@ -6,40 +6,43 @@ import FloatingLabelInput from './FloatingLabelInput';
 import Toast from './Toast';
 
 function Main() {
+  // State management - useState hook for controlled components
   const [firstNumber, setFirstNumber] = useState('');
   const [secondNumber, setSecondNumber] = useState('');
   const [openToast, setOpenToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastSeverity, setToastSeverity] = useState('error');
   const [result, setResult] = useState('0');
+  
+  // Validate if character is a digit (0-9)
   const isNumber = char =>{
     const reg = /^[0-9]$/;
     return reg.test(char);
   }
 
+  // Event handler: Input validation on keydown
   const handleKeyDown = (e) => {
     const chr = e.key;
     const input = e.target;
     const cursorPosition = input.selectionStart;
 
-   
+    // Allow Ctrl/Cmd shortcuts (Ctrl+A, Ctrl+C, Ctrl+V, etc.)
     if (e.ctrlKey || e.metaKey) {
       return; 
     }
 
-    
+    // Allow control keys (navigation, delete, etc.)
     const allowedKeys = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
     
     if (allowedKeys.includes(chr)) {
       return; 
     }
 
-    // Cho phép dấu '-' chỉ ở đầu và chỉ khi chưa có dấu '-'
+    // Allow negative sign only at the beginning
     if (chr === '-') {
       const currentValue = input.value;
-      // Cho phép '-' nếu: input rỗng HOẶC (cursor ở đầu VÀ chưa có dấu '-')
       if (currentValue === '' || (cursorPosition === 0 && !currentValue.includes('-'))) {
-        return; // Cho phép dấu '-' ở đầu
+        return;
       }
       e.preventDefault();
       setToastMessage('Dấu "-" chỉ được đặt ở đầu số!');
@@ -48,7 +51,7 @@ function Main() {
       return;
     }
 
-    
+    // Block non-numeric characters and show error
     if (!isNumber(chr)) {
       e.preventDefault();
       setToastMessage('Chỉ được nhập số! Không được nhập ký tự.');
@@ -57,11 +60,14 @@ function Main() {
     }
   };
 
+  // Close toast notification
   const handleCloseToast = () => {
     setOpenToast(false);
   };
 
+  // Event handler: Calculate sum with negative number support
   const handleSumCalculate = ()=>{
+    // Validation: Check if both inputs are filled
     if(firstNumber === "" || secondNumber === "") {
       setToastMessage('Vui lòng nhập đầy đủ cả hai số!');
       setToastSeverity('warning');
@@ -69,22 +75,22 @@ function Main() {
       return;
     }
 
-    // Kiểm tra dấu âm
+    // Detect negative signs
     const isNegative1 = firstNumber.startsWith('-');
     const isNegative2 = secondNumber.startsWith('-');
 
-    // Lấy giá trị tuyệt đối
+    // Get absolute values
     const absNum1 = isNegative1 ? firstNumber.substring(1) : firstNumber;
     const absNum2 = isNegative2 ? secondNumber.substring(1) : secondNumber;
 
-    // TH1: Cả hai cùng dấu (cộng và giữ nguyên dấu)
+    // Case 1: Same signs - add absolute values and keep the sign
     if (isNegative1 === isNegative2) {
       const sum = addTwoPositiveNumbers(absNum1, absNum2);
       setResult(isNegative1 ? '-' + sum : sum);
       return;
     }
 
-    // TH2: Khác dấu (trừ số lớn - số nhỏ)
+    // Case 2: Different signs - subtract and apply sign of larger number
     const comparison = compareNumbers(absNum1, absNum2);
     
     if (comparison === 0) {
@@ -93,17 +99,15 @@ function Main() {
     }
 
     if (comparison > 0) {
-      // |num1| > |num2|
       const diff = subtractTwoPositiveNumbers(absNum1, absNum2);
       setResult(isNegative1 ? '-' + diff : diff);
     } else {
-      // |num2| > |num1|
       const diff = subtractTwoPositiveNumbers(absNum2, absNum1);
       setResult(isNegative2 ? '-' + diff : diff);
     }
   }
 
-  // So sánh hai số dương (dạng string)
+  // Helper: Compare two positive numbers (string format)
   const compareNumbers = (num1, num2) => {
     if (num1.length !== num2.length) {
       return num1.length - num2.length;
@@ -111,8 +115,9 @@ function Main() {
     return num1.localeCompare(num2);
   }
 
-  // Cộng hai số dương
+  // Helper: Add two positive numbers digit-by-digit with carry
   const addTwoPositiveNumbers = (num1, num2) => {
+    // Reverse strings for right-to-left processing
     const n1 = num1.split("").reverse().join("");
     const n2 = num2.split("").reverse().join("");
     
@@ -121,6 +126,7 @@ function Main() {
 
     let carry = 0;
 
+    // Process each digit
     for (let i = 0; i < maxLen; i++) {
       const digit1 = i < n1.length ? parseInt(n1[i]) : 0;
       const digit2 = i < n2.length ? parseInt(n2[i]) : 0;
@@ -130,24 +136,28 @@ function Main() {
       carry = Math.floor(sum / 10);
     }
 
+    // Remove leading zeros
     let answer = res.reverse().join("").replace(/^0+/, "");
     return answer === "" ? "0" : answer;
   }
 
-  // Trừ hai số dương (num1 >= num2)
+  // Helper: Subtract two positive numbers (num1 >= num2) with borrow
   const subtractTwoPositiveNumbers = (num1, num2) => {
+    // Reverse strings for right-to-left processing
     const n1 = num1.split("").reverse().join("");
     const n2 = num2.split("").reverse().join("");
     
     const res = [];
     let borrow = 0;
 
+    // Process each digit
     for (let i = 0; i < n1.length; i++) {
       let digit1 = parseInt(n1[i]);
       const digit2 = i < n2.length ? parseInt(n2[i]) : 0;
 
       digit1 -= borrow;
       
+      // Handle borrowing if needed
       if (digit1 < digit2) {
         digit1 += 10;
         borrow = 1;
@@ -158,6 +168,7 @@ function Main() {
       res.push(digit1 - digit2);
     }
 
+    // Remove leading zeros
     let answer = res.reverse().join("").replace(/^0+/, "");
     return answer === "" ? "0" : answer;
   }

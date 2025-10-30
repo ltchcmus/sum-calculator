@@ -1,6 +1,8 @@
 import { Snackbar, Alert } from '@mui/material';
 
+// Reusable toast notification component
 function Toast({ open, onClose, message, severity = 'error', duration = 3000 }) {
+  // Prevent closing on clickaway for better UX
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
