@@ -1,31 +1,31 @@
 import { useState } from 'react';
 import './FloatingLabelInput.css';
 
-// Custom input component với label tự động nổi lên khi focus/nhập
+// Custom input component with label that floats up when focused/filled
 function FloatingLabelInput({ label, placeholder, value, onChange, onKeyDown }) {
-  // State theo dõi input có đang được focus không
+  // State to track if input is currently focused
   const [isFocused, setIsFocused] = useState(false);
 
   const handleFocus = () => setIsFocused(true);
   const handleBlur = () => setIsFocused(false);
 
-  // Label nổi lên khi: đang focus HOẶC đã có giá trị
+  // Label floats up when: focused OR has value
   const isFloating = isFocused || value;
 
   return (
     <div className="floating-input-container">
-      {/* Input với glassmorphism styling */}
+      {/* Input with glassmorphism styling */}
       <input
         type="number"
         className={`floating-input ${isFocused ? 'focused' : ''}`}
-        placeholder={isFocused ? placeholder : ''} // chỉ hiện placeholder khi focus
+        placeholder={isFocused ? placeholder : ''} // only show placeholder when focused
         value={value}
         onChange={onChange}
         onFocus={handleFocus}
         onBlur={handleBlur}
         onKeyDown={onKeyDown}
       />
-      {/* Label sẽ nổi lên (di chuyển lên trên) khi isFloating = true */}
+      {/* Label will float up (move upward) when isFloating = true */}
       <label className={`floating-label ${isFloating ? 'floating' : ''} ${isFocused ? 'focused' : ''}`}>
         {label}
       </label>

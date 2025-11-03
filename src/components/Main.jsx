@@ -6,45 +6,45 @@ import FloatingLabelInput from './FloatingLabelInput';
 import Toast from './Toast';
 
 function Main() {
-  // State quản lý 2 số nhập vào từ user
+  // State to manage two input numbers from user
   const [firstNumber, setFirstNumber] = useState('');
   const [secondNumber, setSecondNumber] = useState('');
   
-  // State quản lý toast notification (thông báo lỗi/cảnh báo)
+  // State to manage toast notification (error/warning messages)
   const [openToast, setOpenToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastSeverity, setToastSeverity] = useState('error');
   
-  // State lưu kết quả tính toán
+  // State to store calculation result
   const [result, setResult] = useState('0');
   
-  // Hàm kiểm tra ký tự có phải số (0-9) hay không
+  // Function to check if character is a digit (0-9)
   const isNumber = char =>{
     const reg = /^[0-9]$/;
     return reg.test(char);
   }
 
-  // Xử lý sự kiện khi user nhấn phím khi đang nhập
-  // Chỉ cho phép nhập số, dấu '-' ở đầu, và các phím điều khiển
+  // Handle keydown event during input
+  // Only allow digits, '-' sign at start, and control keys
   const handleKeyDown = (e) => {
     const chr = e.key;
     const input = e.target;
     const cursorPosition = input.selectionStart;
 
-    // Cho phép Ctrl+A (chọn tất cả), Ctrl+C (copy), Ctrl+V (paste)
+    // Allow Ctrl+A (select all), Ctrl+C (copy), Ctrl+V (paste)
     if (e.ctrlKey || e.metaKey) return; 
 
-    // Cho phép các phím điều hướng (mũi tên, Backspace, Delete, Tab...)
+    // Allow navigation keys (arrows, Backspace, Delete, Tab...)
     const allowedKeys = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
     if (allowedKeys.includes(chr)) return; 
 
-    // Cho phép dấu '-' chỉ khi: input rỗng HOẶC con trỏ ở đầu và chưa có dấu '-'
+    // Allow '-' only when: input is empty OR cursor at start and no '-' exists
     if (chr === '-') {
       const currentValue = input.value;
       if (currentValue === '' || (cursorPosition === 0 && !currentValue.includes('-'))) {
         return;
       }
-      // Nếu không thỏa điều kiện trên thì chặn và hiển thị cảnh báo
+      // If condition not met, block and show warning
       e.preventDefault();
       setToastMessage('Dấu "-" chỉ được đặt ở đầu số!');
       setToastSeverity('warning');
@@ -52,7 +52,7 @@ function Main() {
       return;
     }
 
-    // Chặn tất cả ký tự không phải số và hiển thị thông báo lỗi
+    // Block all non-digit characters and show error message
     if (!isNumber(chr)) {
       e.preventDefault();
       setToastMessage('Chỉ được nhập số! Không được nhập ký tự.');
@@ -61,14 +61,14 @@ function Main() {
     }
   };
 
-  // Đóng toast notification khi user bấm X hoặc hết thời gian
+  // Close toast notification when user clicks X or time expires
   const handleCloseToast = () => {
     setOpenToast(false);
   };
 
-  // Hàm tính tổng 2 số - hỗ trợ cả số âm và số dương
+  // Function to calculate sum of 2 numbers - supports both negative and positive
   const handleSumCalculate = ()=>{
-    // Kiểm tra xem user đã nhập đủ 2 số chưa
+    // Check if user entered both numbers
     if(firstNumber === "" || secondNumber === "") {
       setToastMessage('Vui lòng nhập đầy đủ cả hai số!');
       setToastSeverity('warning');
@@ -76,103 +76,103 @@ function Main() {
       return;
     }
 
-    // Tách dấu và giá trị tuyệt đối của 2 số
-    const isNegative1 = firstNumber.startsWith('-'); // true nếu số 1 âm
-    const isNegative2 = secondNumber.startsWith('-'); // true nếu số 2 âm
-    const absNum1 = isNegative1 ? firstNumber.substring(1) : firstNumber; // lấy phần số không có dấu
+    // Extract sign and absolute value of 2 numbers
+    const isNegative1 = firstNumber.startsWith('-'); // true if number 1 is negative
+    const isNegative2 = secondNumber.startsWith('-'); // true if number 2 is negative
+    const absNum1 = isNegative1 ? firstNumber.substring(1) : firstNumber; // get number without sign
     const absNum2 = isNegative2 ? secondNumber.substring(1) : secondNumber;
 
-    // Trường hợp 1: Cùng dấu (cả 2 dương hoặc cả 2 âm)
-    // => Cộng 2 giá trị tuyệt đối, giữ nguyên dấu
+    // Case 1: Same sign (both positive or both negative)
+    // => Add 2 absolute values, keep the sign
     if (isNegative1 === isNegative2) {
       const sum = addTwoPositiveNumbers(absNum1, absNum2);
       setResult(isNegative1 ? '-' + sum : sum);
       return;
     }
 
-    // Trường hợp 2: Khác dấu (1 dương 1 âm)
-    // => Trừ giá trị tuyệt đối, lấy dấu của số lớn hơn
+    // Case 2: Different signs (1 positive 1 negative)
+    // => Subtract absolute values, take sign of larger number
     const comparison = compareNumbers(absNum1, absNum2);
     
-    // Nếu 2 số bằng nhau về giá trị tuyệt đối => kết quả = 0
+    // If 2 numbers equal in absolute value => result = 0
     if (comparison === 0) {
       setResult('0');
       return;
     }
 
-    // Nếu số 1 lớn hơn => kết quả mang dấu của số 1
+    // If number 1 is larger => result carries sign of number 1
     if (comparison > 0) {
       const diff = subtractTwoPositiveNumbers(absNum1, absNum2);
       setResult(isNegative1 ? '-' + diff : diff);
     } else {
-      // Nếu số 2 lớn hơn => kết quả mang dấu của số 2
+      // If number 2 is larger => result carries sign of number 2
       const diff = subtractTwoPositiveNumbers(absNum2, absNum1);
       setResult(isNegative2 ? '-' + diff : diff);
     }
   }
 
-  // So sánh 2 số dưới dạng string (để hỗ trợ số rất lớn)
+  // Compare 2 numbers as strings (to support very large numbers)
   const compareNumbers = (num1, num2) => {
-    // So sánh độ dài trước: số nào dài hơn thì lớn hơn
+    // Compare length first: longer number is larger
     if (num1.length !== num2.length) {
       return num1.length - num2.length;
     }
-    // Nếu cùng độ dài, so sánh từng ký tự theo thứ tự từ điển
+    // If same length, compare each character in lexicographical order
     return num1.localeCompare(num2);
   }
 
-  // Cộng 2 số dương theo phương pháp cộng từng chữ số từ phải sang trái
+  // Add 2 positive numbers using digit-by-digit addition from right to left
   const addTwoPositiveNumbers = (num1, num2) => {
-    // Đảo ngược chuỗi để tính từ phải sang trái (đơn vị -> chục -> trăm...)
+    // Reverse strings to calculate from right to left (ones -> tens -> hundreds...)
     const n1 = num1.split("").reverse().join("");
     const n2 = num2.split("").reverse().join("");
     
-    const maxLen = Math.max(n1.length, n2.length) + 1; // +1 cho trường hợp nhớ cuối
+    const maxLen = Math.max(n1.length, n2.length) + 1; // +1 for final carry case
     const res = new Array(maxLen).fill(0);
-    let carry = 0; // biến lưu số nhớ
+    let carry = 0; // variable to store carry
 
-    // Duyệt từng vị trí và cộng
+    // Iterate through each position and add
     for (let i = 0; i < maxLen; i++) {
-      const digit1 = i < n1.length ? parseInt(n1[i]) : 0; // lấy chữ số hoặc 0 nếu hết
+      const digit1 = i < n1.length ? parseInt(n1[i]) : 0; // get digit or 0 if exhausted
       const digit2 = i < n2.length ? parseInt(n2[i]) : 0;
-      const sum = digit1 + digit2 + carry; // cộng 2 chữ số + số nhớ
-      res[i] = sum % 10; // lấy hàng đơn vị
-      carry = Math.floor(sum / 10); // lấy số nhớ (hàng chục)
+      const sum = digit1 + digit2 + carry; // add 2 digits + carry
+      res[i] = sum % 10; // get ones place
+      carry = Math.floor(sum / 10); // get carry (tens place)
     }
 
-    // Đảo ngược lại và loại bỏ các số 0 ở đầu
+    // Reverse back and remove leading zeros
     let answer = res.reverse().join("").replace(/^0+/, "");
     return answer === "" ? "0" : answer;
   }
 
-  // Trừ 2 số dương theo phương pháp trừ từng chữ số (num1 >= num2)
+  // Subtract 2 positive numbers using digit-by-digit subtraction (num1 >= num2)
   const subtractTwoPositiveNumbers = (num1, num2) => {
-    // Đảo ngược chuỗi để tính từ phải sang trái
+    // Reverse strings to calculate from right to left
     const n1 = num1.split("").reverse().join("");
     const n2 = num2.split("").reverse().join("");
     
     const res = [];
-    let borrow = 0; // biến lưu số mượn
+    let borrow = 0; // variable to store borrow
 
-    // Duyệt từng vị trí và trừ
+    // Iterate through each position and subtract
     for (let i = 0; i < n1.length; i++) {
       let digit1 = parseInt(n1[i]);
       const digit2 = i < n2.length ? parseInt(n2[i]) : 0;
 
-      digit1 -= borrow; // trừ đi số đã mượn ở lượt trước
+      digit1 -= borrow; // subtract previously borrowed amount
       
-      // Nếu chữ số bị trừ nhỏ hơn chữ số trừ => cần mượn 1 từ hàng bên trái
+      // If minuend digit is less than subtrahend => need to borrow from left
       if (digit1 < digit2) {
-        digit1 += 10; // mượn 10
-        borrow = 1; // đánh dấu đã mượn
+        digit1 += 10; // borrow 10
+        borrow = 1; // mark as borrowed
       } else {
-        borrow = 0; // không cần mượn
+        borrow = 0; // no need to borrow
       }
 
-      res.push(digit1 - digit2); // lưu kết quả phép trừ
+      res.push(digit1 - digit2); // store subtraction result
     }
 
-    // Đảo ngược lại và loại bỏ các số 0 ở đầu
+    // Reverse back and remove leading zeros
     let answer = res.reverse().join("").replace(/^0+/, "");
     return answer === "" ? "0" : answer;
   }
@@ -189,13 +189,13 @@ function Main() {
         minHeight: 'calc(100vh - 200px)',
         position: 'relative',
         overflow: 'hidden',
-        // Animation cho gradient chuyển động
+        // Animation for moving gradient
         '@keyframes gradientFlow': {
           '0%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' },
           '100%': { backgroundPosition: '0% 50%' }
         },
-        // Lớp 1: Mẫu chấm tròn xoay và di chuyển
+        // Layer 1: Rotating and moving dot pattern
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -208,12 +208,12 @@ function Main() {
           animation: 'backgroundMove 30s linear infinite',
           opacity: 0.6
         },
-        // Animation cho mẫu chấm: di chuyển và xoay 360 độ
+        // Animation for dot pattern: move and rotate 360 degrees
         '@keyframes backgroundMove': {
           '0%': { transform: 'translate(0, 0) rotate(0deg)' },
           '100%': { transform: 'translate(50px, 50px) rotate(360deg)' }
         },
-        // Lớp 2: Các vòng tròn màu mờ chuyển động như đám mây
+        // Layer 2: Floating color circles moving like clouds
         '&::after': {
           content: '""',
           position: 'absolute',
@@ -227,9 +227,9 @@ function Main() {
             radial-gradient(circle at 40% 80%, rgba(118, 75, 162, 0.3) 0%, transparent 50%)
           `,
           animation: 'floatingCircles 20s ease-in-out infinite',
-          pointerEvents: 'none' // không chặn click vào các element bên dưới
+          pointerEvents: 'none' // don't block clicks on elements below
         },
-        // Animation cho các vòng tròn: di chuyển và thay đổi kích thước/độ mờ
+        // Animation for circles: move and change size/opacity
         '@keyframes floatingCircles': {
           '0%, 100%': { 
             transform: 'translate(0, 0) scale(1)',
