@@ -48,7 +48,7 @@ function Footer() {
               }
             }} 
           /> 
-          by Your Name
+          by Le Thanh Cong
         </Typography>
         {/* Copyright text với năm tự động */}
         <Typography 
